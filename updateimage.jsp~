@@ -1,0 +1,32 @@
+ String permitted = (request.getParameter("PERMITTED")).trim();
+        String subj = (request.getParameter("SUBJECT")).trim();
+        String place = (request.getParameter("PLACE")).trim();
+        String timing = (request.getParameter("TIMING")).trim();
+        String desc = (request.getParameter("DESCRIPTION")).trim();
+
+        if (permitted==""){
+
+          permitted="2";
+
+        }else{
+       
+          try {
+            int perm = Integer.parseInt(permitted);
+          } catch (NumberFormatException e) {
+            //Will Throw exception!
+            //do something! anything to handle the exception.
+            errorPage(out,"permitted should be number!");
+            return;
+          }
+
+        }
+
+        
+        java.sql.Date date=null;
+        
+        try{
+          date = java.sql.Date.valueOf(timing);
+        }catch ( IllegalArgumentException e) {
+          errorPage(out,"Invalid Date format!Should be yyyy-mm-dd.");
+          return;
+        }

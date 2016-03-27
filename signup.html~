@@ -1,0 +1,59 @@
+<html>
+<head>
+<title>Sign up</title>
+<script language = "JavaScript" type = "text/javascript">
+function checkPhone(form) {
+	if (form.PHONE.value.trim().length() != 10) {
+		alert("The phone number should be 10 digits!");
+		form.PHONE.focus();
+		return false;
+	}else{
+		return true;
+	}
+}
+
+</script>
+</head>
+
+
+<!--This is the signup page-->
+<h1><center>Sign up</center></h1>
+
+<form onSubmit = "return checkPhone(this);" method="post" action="signup.jsp" name="SignupForm" >
+
+
+<table>
+<tbody><tr valign="TOP" align="LEFT">
+<td><b><i>User Name:</i></b></td>
+<td><input name="UNAME" type="text"><br></td>
+</tr>
+<tr valign="TOP" align="LEFT">
+<td><b><i>Password:</i></b></td>
+<td><input name="PASSWD" type="text"></td>
+</tr>
+<tr valign="TOP" align="LEFT">
+<td><b><i>First Name:</i></b></td>
+<td><input name="FNAME" type="text"></td>
+</tr>
+<tr valign="TOP" align="LEFT">
+<td><b><i>Last Name:</i></b></td>
+<td><input name="LNAME" type="text"></td>
+</tr>
+<tr valign="TOP" align="LEFT">
+<td><b><i>Address:</i></b></td>
+<td><input name="ADDR" type="text"></td>
+</tr>
+<tr valign="TOP" align="LEFT">
+<td><b><i>E-mail:</i></b></td>
+<td><input name="EMAIL" type="text"></td>
+</tr>
+<tr valign="TOP" align="LEFT">
+<td><b><i>Phone Number:</i></b></td>
+<td><input name="PHONE" type="text"></td>
+</tr>
+</tbody></table>
+
+<input value="SIGN UP" name="Submit" type="submit">
+<a target="_blank" href="login.html">Login</a>
+</form>
+</html>

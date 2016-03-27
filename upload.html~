@@ -1,0 +1,18 @@
+<html>
+<head>
+<title>Login</title>
+</head>
+
+Please input or select the path of the image!
+<form name="upload-image" method="POST" enctype="multipart/form-data" action="UploadImage">
+<table>
+  <tbody><tr>
+    <th>File path: </th>
+    <td><input name="file-path" size="30" type="file"></td>
+  </tr>
+  <tr>
+    <td colspan="2" align="CENTER"><input name="Submit" value="Upload" type="submit"></td>
+  </tr>
+</tbody></table>
+</form>
+</html> 

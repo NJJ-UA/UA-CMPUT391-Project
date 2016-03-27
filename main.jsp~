@@ -1,0 +1,41 @@
+<HTML>
+<HEAD>
+
+
+<TITLE>Main Page</TITLE>
+
+</HEAD>
+
+<BODY>
+<!--A simple example to demonstrate how to use JSP to 
+    connect and query a database. 
+    @author  Hong-Yu Zhang, University of Alberta
+ -->
+<%@ page import="java.sql.*" %>
+<% 
+if( session.getAttribute("isLogin")!=null && (Boolean)session.getAttribute("isLogin"))
+{
+
+  
+  
+  
+  String userName=session.getAttribute("USERNAME").toString();
+ 
+%>
+  <p><b>Hello,<%=userName%>!</b></p>
+  <form method="post" action="logout.jsp">
+    <input type="submit" value="Log Out" name="LogOut">
+  </form>
+
+<%
+}
+else
+{
+  out.println("<a href=\"login.html\">You need login first!</a>");
+}      
+%>
+
+
+
+</BODY>
+</HTML>

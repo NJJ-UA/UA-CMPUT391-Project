@@ -32,6 +32,7 @@ CREATE TABLE persons (
 );
 
 INSERT INTO users values('admin','admin', sysdate);
+INSERT INTO persons values('admin',null,null,null,null,null);
 
 
 

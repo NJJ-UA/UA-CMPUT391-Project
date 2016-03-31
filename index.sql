@@ -1,3 +1,9 @@
+DROP INDEX subindex;
+
+DROP INDEX plaindex;
+
+DROP INDEX desindex;
+
 CREATE INDEX subindex ON IMAGES(SUBJECT)
 INDEXTYPE IS CTXSYS.CONTEXT;
 

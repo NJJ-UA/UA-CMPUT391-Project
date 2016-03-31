@@ -3,7 +3,10 @@
 <title>Sign up</title>
 <script language = "JavaScript" type = "text/javascript">
 function checkPhone(form) {
-	if (form.PHONE.value.trim().length() != 10) {
+	if (form.PHONE.value.trim()==""){
+		return true;
+	}
+	if ((form.PHONE.value.trim().length) != 10){
 		alert("The phone number should be 10 digits!");
 		form.PHONE.focus();
 		return false;

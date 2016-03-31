@@ -21,7 +21,7 @@ if( session.getAttribute("isLogin")!=null && (Boolean)session.getAttribute("isLo
     <table>
       <tbody><tr>
 	<th>File path: </th>
-	<td><input name="file-path" size="30" type="file"></td>
+	<td><input name="file-path" size="30" type="file" multiple></td>
       </tr>
       <tr>
 	<td colspan="2" align="CENTER"><input name="Submit" value="Upload" type="submit"></td>

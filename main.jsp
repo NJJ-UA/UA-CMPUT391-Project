@@ -17,15 +17,26 @@ if( session.getAttribute("isLogin")!=null && (Boolean)session.getAttribute("isLo
 {
 
   
-  
-  
+
   String userName=session.getAttribute("USERNAME").toString();
  
 %>
   <p><b>Hello,<%=userName%>!</b></p>
-  <form method="post" action="logout.jsp">
+ <form method="post" action="logout.jsp">
     <input type="submit" value="Log Out" name="LogOut">
   </form>
+<br>
+<form method="post" action="PictureBrowse">
+<input type="submit" value="See TOP 5 Pictures!" name="toppic">
+</form>
+<br>
+<a href="addGroups.jsp">Add Groups!</a>
+<br>
+<a href="updateGroup.jsp">Manage your groups!</a>
+<br>
+<a href="uploadpage.jsp">Upload Pictures!</a>
+<br>
+ <br>
 
 
   <form method="post" action="PictureBrowse">
@@ -57,11 +68,12 @@ if( session.getAttribute("isLogin")!=null && (Boolean)session.getAttribute("isLo
 	<td>Rank By:</td>
       </tr>
       <tr><td> 
-	<select>
-	  <option value ="rele">Relevant</option>
+	<select id="rank" name="rank">
+	  
 	  <option value ="first">most-recent-first</option>
 	  <option value="last">most-recent-last</option>
-	  
+	  <option value ="rele">Relevant</option>
+
 	</select>
 
       </td></tr>

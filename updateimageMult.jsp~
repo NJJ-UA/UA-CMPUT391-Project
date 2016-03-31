@@ -1,0 +1,161 @@
+<html>
+<head>
+<title>Upload</title>
+
+</head>
+<body>
+
+<%@ page import="java.sql.*" %>
+
+<% 
+if( session.getAttribute("isLogin")!=null && (Boolean)session.getAttribute("isLogin"))
+{
+  out.println("<a href=\"main.jsp\">Home</a>");
+ 
+  String permitted = (request.getParameter("PERMITTED")).trim();
+  String subj = (request.getParameter("SUBJECT")).trim();
+  String place = (request.getParameter("PLACE")).trim();
+  String timing = (request.getParameter("TIMING")).trim();
+  String desc = (request.getParameter("DESCRIPTION")).trim();
+
+  String pic_id=request.getParameter("p_id");
+  String[] pid = pic_id.split(" ");
+  //establish the connection to the underlying database
+  Connection conn = null;
+  Statement stmt = null;
+
+  String driverName = "oracle.jdbc.driver.OracleDriver";
+  String dbstring = "jdbc:oracle:thin:@gwynne.cs.ualberta.ca:1521:CRS";
+  
+  
+  String update = "update images set ";
+  String where = " where photo_id<= "+ pid[1] +" and photo_id>= " + pid[0];
+  pic_id=pid[0]+"+"+pid[1];
+
+  boolean empty=true;
+
+  if (!permitted.equals("")){
+    empty = false;
+    int perm;
+    try {
+      perm = Integer.parseInt(permitted);
+    } catch (NumberFormatException e) {
+      //Will Throw exception!
+      //do something! anything to handle the exception.
+      out.println("<h3>permitted should be number!</h3>");
+      out.println("<a href=\"updateimage.jsp?p_id="+pic_id+"\">Back to update!</a>");
+      conn.rollback();
+      return;
+    }
+    update=update+" permitted ="+ permitted +",";
+
+  }
+
+
+  if(!subj.equals("")){
+    empty = false;
+    update=update+" subject ="+ subj +",";
+  }
+
+  if(!place.equals("")){
+    empty = false;
+    update=update+" place ="+ place +",";
+  }
+  
+  if(!timing.equals("")){
+    empty = false;
+    Date date=null;
+    
+    try{
+      date = Date.valueOf(timing);
+    }catch ( IllegalArgumentException e) {
+      out.println("<h3>Invalid Date format!Should be yyyy-mm-dd.</h3>");
+      out.println("<a href=\"updateimage.jsp?p_id="+pic_id+"\">Back to update!</a>");
+      conn.rollback();
+      return;
+    }
+
+    update=update+" timing = to_date('"+ timing +"','yyyy-mm-dd'),";
+  }
+
+  if(!desc.equals("")){
+    empty = false;
+    update=update+" description ="+ desc +",";
+  }
+  if(empty){
+    out.println("<h1>All empty,no need to update</h>");
+    return;
+  }
+  update=update.substring(0, str.length()-1);
+  String cmd = update + where;
+
+  try{
+    //load and register the driver
+    Class drvClass = Class.forName(driverName); 
+    DriverManager.registerDriver((Driver) drvClass.newInstance());
+  }
+  catch(Exception ex){
+    out.println("<hr>" + ex.getMessage() + "<hr>");
+    return;
+  }
+ 
+  try{
+    //establish the connection 
+    conn = DriverManager.getConnection(dbstring,"jni1","c3912016");
+    conn.setAutoCommit(false);
+    stmt = conn.createStatement();
+  }
+  catch(Exception ex){
+    
+    out.println("<hr>" + ex.getMessage() + "<hr>");
+    return;
+  }
+  
+
+  try{
+
+
+   
+    int ret = stmt.executeUpdate(cmd);
+    int grdtru=Integer.parseInt(pid[1])-Integer.parseInt(pic[0])+1;
+    if(ret!=grdtru){
+      out.println("<h3>row number changerd incorrect,rollbacked.returned: "+ret+" should be: "+grdtru+" </h3>");
+      conn.rollback();
+      return;
+    }
+
+
+    conn.commit();
+    out.println("<h1>Update successul.</h>");
+    try{
+      conn.close();
+    }
+    catch(Exception ex){
+      out.println("<hr>" + ex.getMessage() + "<hr>");
+      
+    }
+    
+  }catch (SQLException e) {
+    conn.rollback();
+    out.println("<h3>The permitted may not in database.</h3>");
+    out.println("<a href=\"updateimage.jsp?p_id="+pic_id+"\">Back to update!</a>");
+    out.println(e.getMessage());
+  }
+  
+%>
+
+
+
+<%
+}
+else
+{
+  out.println("<a href=\"login.html\">You need login first!</a>");
+}      
+%>
+
+
+
+</BODY>
+</HTML>
+

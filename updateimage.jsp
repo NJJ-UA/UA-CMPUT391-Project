@@ -9,18 +9,18 @@
 if( session.getAttribute("isLogin")!=null && (Boolean)session.getAttribute("isLogin"))
 {
   out.println("<a href=\"main.jsp\">Home</a>");
-  String pic_id;
-  if(request.getParameter("") == null){
+
+  String p_id=request.getParameter("p_id");
+  if (p_id.contains(" ")){
+    String[] p=p_id.split(" ");
+    out.println("<form  name=\"update\" method=\"POST\"  action=\"updateimageMult.jsp?p_id="+p[0]+"+"+p[1]+"\">");
     
-    out.println("<H1>Upload Successfully!</H1>");
-    out.println("<H3>You can add some other infomations or press HOME to get back to home page.</H1>");
-    pic_id=session.getAttribute("PICID").toString();
-    
+  }else{
+    out.println("<form  name=\"update\" method=\"POST\"  action=\"updateimageBack.jsp?p_id="+p_id+"\">");
   }
 %>
 
-  <form  name="update" method="POST"  action="updateimageBack.jsp">
-    <table>
+	<table>
       <tbody><tr valign="TOP" align="LEFT">
 	<td><b><i>PERMITTED:</i></b></td>
 	<td><input name="PERMITTED" type="text"><br></td>

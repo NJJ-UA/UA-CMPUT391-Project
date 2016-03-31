@@ -35,12 +35,12 @@ public class GetOnePic extends HttpServlet
 	String picid  = request.getQueryString();
 	String query;
 
-	if ( picid.startsWith("big") )  
+	if ( picid.startsWith("big") )  {
 	    query = 
 	     "select photo from images where photo_id=" + picid.substring(3);
-	else
+	}else{
 	    query = "select THUMBNAIL from images where photo_id=" + picid;
-
+	}	
 	ServletOutputStream out = response.getOutputStream();
 
 	/*
@@ -53,6 +53,9 @@ public class GetOnePic extends HttpServlet
 	    ResultSet rset = stmt.executeQuery(query);
 
 	    if ( rset.next() ) {
+		//if ( picid.startsWith("big") )  {
+		 //   out.println("Photo id: "+String.valueOf(rset.getInt(2)));
+		//}
 		response.setContentType("image/gif");
 		InputStream input = rset.getBinaryStream(1);	    
 		int imageByte;
@@ -60,6 +63,9 @@ public class GetOnePic extends HttpServlet
 		    out.write(imageByte);
 		}
 		input.close();
+		//if ( picid.startsWith("big") )  {
+		//   out.println("Photo id: "+String.valueOf(rset.getInt(2)));
+		//}
 	    } 
 	    else 
 		out.println("no picture available");

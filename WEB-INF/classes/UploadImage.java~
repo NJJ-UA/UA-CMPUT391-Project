@@ -64,10 +64,35 @@ public class UploadImage extends HttpServlet {
 	String password = "c3912016";
 	String drivername = "oracle.jdbc.driver.OracleDriver";
 	String dbstring ="jdbc:oracle:thin:@gwynne.cs.ualberta.ca:1521:CRS";
-	int pic_id;
+	int pic_id=0;
 
         Connection  conn;
+
         
+        response.setContentType("text/html");
+        PrintWriter out = response.getWriter();
+        String  response_message;
+   
+	// Get the session 
+	HttpSession session = request.getSession( false );
+        if (session == null || !((Boolean)session.getAttribute("isLogin"))){
+          
+          out.println("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0 " +
+                      "Transitional//EN\">\n" +
+                      "<HTML>\n" +
+                      "<HEAD><TITLE>Upload Message</TITLE></HEAD>\n" +
+                      "<BODY>\n" +
+                      "<a href=\"login.html\">You need login first!</a>" +
+                      "</BODY></HTML>");
+          return;
+        }
+       
+        String userName = session.getAttribute("USERNAME").toString();
+
+
+
+        
+          
         try{
           // Connect to the database and create a statement
           conn = getConnected(drivername,dbstring, username,password);
@@ -75,39 +100,41 @@ public class UploadImage extends HttpServlet {
           
         }
         catch( Exception ex ) {
-	    //System.out.println( ex.getMessage());
-	    response_message = ex.getMessage();
-            response.setContentType("text/html");
-            PrintWriter out = response.getWriter();
-            out.println("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0 " +
-                        "Transitional//EN\">\n" +
-                        "<HTML>\n" +
-                        "<HEAD><TITLE>Upload Message</TITLE></HEAD>\n" +
-                        "<BODY>\n" +
-                        "<H1>" +
-                        response_message +
-                        "</H1>\n" +
-                        "</BODY></HTML>");
-            return;
+          //System.out.println( ex.getMessage());
+          response_message = ex.getMessage();
+           
+          out.println("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0 " +
+                      "Transitional//EN\">\n" +
+                      "<HTML>\n" +
+                      "<HEAD><TITLE>Upload Message</TITLE></HEAD>\n" +
+                      "<BODY>\n" +
+                      "<H1>" +
+                      response_message +
+                      "</H1>\n" +
+                      "</BODY></HTML>");
+          return;
             
 	}
         
 	try {
-	    //Parse the HTTP request to get the image stream
-	    DiskFileUpload fu = new DiskFileUpload();
-	    List FileItems = fu.parseRequest(request);
+          //Parse the HTTP request to get the image stream
+          DiskFileUpload fu = new DiskFileUpload();
+          List FileItems = fu.parseRequest(request);
 	        
-	    // Process the uploaded items, assuming only 1 image file uploaded
-	    Iterator i = FileItems.iterator();
-	    FileItem item = (FileItem) i.next();
-	    while (i.hasNext() && item.isFormField()) {
-		item = (FileItem) i.next();
-	    }
+          // Process the uploaded items, assuming only 1 image file uploaded
+          Iterator i = FileItems.iterator();
+          FileItem item;//= (FileItem) i.next();
+          int begin_id=-1;
+          while (i.hasNext()) {
+            item = (FileItem) i.next();
+	    if(item.isFormField()){
+              break;
+            }
 
 	    //Get the image stream
 	    InputStream instream = item.getInputStream();
-
-	    BufferedImage img = ImageIO.read(instream);
+            InputStream instreamThu = item.getInputStream();
+	    BufferedImage img = ImageIO.read(instreamThu);
 	    BufferedImage thumbNail = shrink(img, 10);
 
             Statement stmt = conn.createStatement();
@@ -118,38 +145,56 @@ public class UploadImage extends HttpServlet {
 	    ResultSet rset1 = stmt.executeQuery("SELECT photo_id_seq.nextval from dual");
 	    rset1.next();
 	    pic_id = rset1.getInt(1);
-
+            if (begin_id==-1){
+              begin_id=pic_id;
+            }
 	    //Insert an empty blob into the table first. Note that you have to 
 	    //use the Oracle specific function empty_blob() to create an empty blob
-	    stmt.execute("INSERT INTO IMAGES VALUES("+pic_id+",NULL,NULL,NULL,NULL,NULL,NULL,empty_blob(),empty_blob())");
+	    stmt.execute("INSERT INTO IMAGES VALUES("+pic_id+",'"+userName+"',2,null,null,null,null,empty_blob(),empty_blob())");
+	    stmt.execute("INSERT INTO IMAGES_VIEWED VALUES("+pic_id+",0)");
  
 	    // to retrieve the lob_locator 
 	    // Note that you must use "FOR UPDATE" in the select statement
 	    String cmd = "SELECT * FROM IMAGES WHERE photo_id = "+pic_id+" FOR UPDATE";
 	    ResultSet rset = stmt.executeQuery(cmd);
 	    rset.next();
-	    BLOB myblob = ((OracleResultSet)rset).getBLOB(8);
+	    BLOB myblobThu = ((OracleResultSet)rset).getBLOB(8);
+            BLOB myblob = ((OracleResultSet)rset).getBLOB(9);
 
 
 	    //Write the image to the blob object
-	    OutputStream outstream = myblob.getBinaryOutputStream();
-	    ImageIO.write(thumbNail, "jpg", outstream);
+	    OutputStream outstreamThu = myblobThu.getBinaryOutputStream();
+            OutputStream outstream = myblob.getBinaryOutputStream();
+	    ImageIO.write(thumbNail, "jpg", outstreamThu);
 	    
-	    /*
+	    
 	    int size = myblob.getBufferSize();
 	    byte[] buffer = new byte[size];
 	    int length = -1;
 	    while ((length = instream.read(buffer)) != -1)
-		outstream.write(buffer, 0, length);
-	    */
+              outstream.write(buffer, 0, length);
+	    
 	    instream.close();
+            instreamThu.close();
 	    outstream.close();
+            outstreamThu.close();
 
             stmt.executeUpdate("commit");
-	    response_message = " Upload OK!  ";
-            conn.commit();
-            conn.close();
+          }
+            
+          response_message = " Upload OK!  ";
+            
+          conn.commit();
+          conn.close();
 
+          String redirectURL;
+          if(begin_id == pic_id){            
+            redirectURL = "updateimage.jsp?p_id="+pic_id;
+              
+          }else{
+            redirectURL = "updateimage.jsp?p_id="+begin_id+"+"+pic_id;
+          }
+          response.sendRedirect(redirectURL);
 	} catch( Exception ex ) {
 	    //System.out.println( ex.getMessage());
 	    response_message = ex.getMessage();
@@ -158,20 +203,14 @@ public class UploadImage extends HttpServlet {
             }catch(Exception ex1){
               response_message += ex1.getMessage();
             }
+            errorPage(out,response_message);
 	}
 
 	//Output response to the client
-	response.setContentType("text/html");
-	PrintWriter out = response.getWriter();
-	out.println("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0 " +
-		    "Transitional//EN\">\n" +
-		    "<HTML>\n" +
-		    "<HEAD><TITLE>Upload Message</TITLE></HEAD>\n" +
-		    "<BODY>\n" +
-		    "<H1>" +
-		            response_message +
-		    "</H1>\n" +
-		    "</BODY></HTML>");
+	
+	
+
+        
     }
 
     /*
@@ -202,4 +241,26 @@ public class UploadImage extends HttpServlet {
 
         return shrunkImage;
     }
+
+     public static void errorPage(PrintWriter outs,String errormess) {
+       outs.println("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0 " +
+                   "Transitional//EN\">\n" +
+                   "<HTML>\n" +
+                   "<HEAD><TITLE>Upload Message</TITLE></HEAD>\n" +
+                   "<BODY>\n" +
+                   "<H1>" +
+                   errormess +
+                   "</H1>\n" +
+                   "<a href=\"uploadpage.jsp\">back to upload</a>"+
+                   "</BODY></HTML>");
+        
+     }
+     public static String addQM(String s){
+       if(s==""){
+         return "null";
+       }
+       return "'"+s+"'";
+     }
+
+    
 }

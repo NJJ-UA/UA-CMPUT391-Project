@@ -25,7 +25,10 @@ if(request.getParameter("Submit") != null)
 	  String phone = (request.getParameter("PHONE")).trim();
 
 	  
-
+	  if(userName==""||password==""){
+		out.println("<a href=\"signup.html\">Username and password can't be empty!</a>");
+		return;
+	}
 
 	  //establish the connection to the underlying database
           Connection conn = null;

@@ -19,13 +19,11 @@
 	  //get the user input from the login page
           String userName = (request.getParameter("UNAME")).trim();
 	  String passwd = (request.getParameter("PASSWD")).trim();
-          out.println("<p>Your input User Name is "+userName+"</p>");
-          out.println("<p>Your input password is "+passwd+"</p>");
-
+	  if(userName==""||passwd==""){
+		out.println("<a href=\"login.html\">Username and password can't be empty!</a>");
+		return;
+	}
 	  
-	  session.setAttribute("USERNAME",userName);
-	 
-	  session.setAttribute("isLogin",false);
 
 	  
 	  //establish the connection to the underlying database
@@ -60,7 +58,7 @@
           Statement stmt = null;
 	  ResultSet rset = null;
           String sql = "select PASSWORD from USERS where USER_NAME = '"+userName+"'";
-	  out.println(sql);
+	  
           try{
 	    stmt = conn.createStatement();
 	    rset = stmt.executeQuery(sql);
@@ -71,7 +69,7 @@
 	    return;
           }
 
-	  String truepwd = "";
+	  String truepwd="";
 	  
           while(rset != null && rset.next())
 	  truepwd = (rset.getString(1)).trim();
@@ -79,6 +77,7 @@
           //display the result
 	  if(passwd.equals(truepwd)){
 	    out.println("<p><b>Your Login is Successful!</b></p>");
+  	    session.setAttribute("USERNAME",userName);
 	    session.setAttribute("isLogin",true);
 	    String redirectURL = "main.jsp";
     	    response.sendRedirect(redirectURL);

@@ -35,12 +35,12 @@ public class GetOnePic extends HttpServlet
 	String picid  = request.getQueryString();
 	String query;
 
-	if ( picid.startsWith("big") )  
+	if ( picid.startsWith("big") )  {
 	    query = 
-	     "select image from pictures where photo_id=" + picid.substring(3);
-	else
-	    query = "select sm_image from pictures where photo_id=" + picid;
-
+	     "select photo,PHOTO_ID from images where photo_id=" + picid.substring(3);
+	}else{
+	    query = "select THUMBNAIL from images where photo_id=" + picid;
+	}	
 	ServletOutputStream out = response.getOutputStream();
 
 	/*
@@ -53,6 +53,9 @@ public class GetOnePic extends HttpServlet
 	    ResultSet rset = stmt.executeQuery(query);
 
 	    if ( rset.next() ) {
+		if ( picid.startsWith("big") )  {
+		    out.println("Photo id: "+String.valueOf(rset.getInt(2)));
+		}
 		response.setContentType("image/gif");
 		InputStream input = rset.getBinaryStream(1);	    
 		int imageByte;
@@ -60,6 +63,9 @@ public class GetOnePic extends HttpServlet
 		    out.write(imageByte);
 		}
 		input.close();
+		if ( picid.startsWith("big") )  {
+		    out.println("Photo id: "+String.valueOf(rset.getInt(2)));
+		}
 	    } 
 	    else 
 		out.println("no picture available");
@@ -81,11 +87,11 @@ public class GetOnePic extends HttpServlet
      */
     private Connection getConnected() throws Exception {
 
-	String username = "user_name";
-	String password = "*****";
+	String username = "jni1";
+	String password = "c3912016";
         /* one may replace the following for the specified database */
-	String dbstring = "jdbc.logicsql@luscar.cs.ualberta.ca:2000:database";
-	String driverName = "com.shifang.logicsql.jdbc.driver.LogicSqlDriver";
+	String dbstring = "jdbc:oracle:thin:@gwynne.cs.ualberta.ca:1521:CRS";
+	String driverName = "oracle.jdbc.driver.OracleDriver";
 
 	/*
 	 *  to connect to the database

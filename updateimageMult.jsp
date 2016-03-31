@@ -17,15 +17,75 @@ if( session.getAttribute("isLogin")!=null && (Boolean)session.getAttribute("isLo
   String place = (request.getParameter("PLACE")).trim();
   String timing = (request.getParameter("TIMING")).trim();
   String desc = (request.getParameter("DESCRIPTION")).trim();
-
+  String cmd;
   String pic_id=request.getParameter("p_id");
-
+  String[] pid = pic_id.split(" ");
   //establish the connection to the underlying database
   Connection conn = null;
   Statement stmt = null;
 
   String driverName = "oracle.jdbc.driver.OracleDriver";
   String dbstring = "jdbc:oracle:thin:@gwynne.cs.ualberta.ca:1521:CRS";
+  
+  
+  String update = "update images set ";
+  String where = " where photo_id<= "+ pid[1] +" and photo_id>= " + pid[0];
+  pic_id=pid[0]+"+"+pid[1];
+
+  boolean empty=true;
+
+  if (!permitted.equals("")){
+    empty = false;
+    int perm;
+    try {
+      perm = Integer.parseInt(permitted);
+    } catch (NumberFormatException e) {
+      //Will Throw exception!
+      //do something! anything to handle the exception.
+      out.println("<h3>permitted should be number!</h3>");
+      out.println("<a href=\"updateimage.jsp?p_id="+pic_id+"\">Back to update!</a>");
+      return;
+    }
+    update=update+" permitted ="+ permitted +",";
+
+  }
+
+
+  if(!subj.equals("")){
+    empty = false;
+    update=update+" subject ='"+ subj +"',";
+  }
+
+  if(!place.equals("")){
+    empty = false;
+    update=update+" place ='"+ place +"',";
+  }
+  
+  if(!timing.equals("")){
+    empty = false;
+    Date date=null;
+    
+    try{
+      date = Date.valueOf(timing);
+    }catch ( IllegalArgumentException e) {
+      out.println("<h3>Invalid Date format!Should be yyyy-mm-dd.</h3>");
+      out.println("<a href=\"updateimage.jsp?p_id="+pic_id+"\">Back to update!</a>");
+      return;
+    }
+
+    update=update+" timing = to_date('"+ timing +"','yyyy-mm-dd'),";
+  }
+
+  if(!desc.equals("")){
+    empty = false;
+    update=update+" description ='"+ desc +"',";
+  }
+  if(empty){
+    out.println("<h1>All empty,no need to update</h>");
+    return;
+  }
+  update=update.substring(0, update.length()-1);
+  cmd = update + where;
   
   try{
     //load and register the driver
@@ -41,8 +101,7 @@ if( session.getAttribute("isLogin")!=null && (Boolean)session.getAttribute("isLo
     //establish the connection 
     conn = DriverManager.getConnection(dbstring,"jni1","c3912016");
     conn.setAutoCommit(false);
-    stmt = conn.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE,	
-      ResultSet.CONCUR_UPDATABLE);
+    stmt = conn.createStatement();
   }
   catch(Exception ex){
     
@@ -54,63 +113,16 @@ if( session.getAttribute("isLogin")!=null && (Boolean)session.getAttribute("isLo
   try{
 
 
-    String cmd = "SELECT IMAGES.* FROM IMAGES WHERE photo_id = "+pic_id;
-    ResultSet rset = stmt.executeQuery(cmd);
-    rset.next();
-
-    String belong=rset.getString(2);
-    if(!(session.getAttribute("USERNAME").toString().equals(belong))){
-	out.println("<h3>Can't modify images not belong to you!</h3>");
-	out.println("<a href=\"main.jsp\">Back to Home!</a>");
-	conn.rollback();
-	return;
-
-    }
-
-    if (!permitted.equals("")){
-      int perm;
-      try {
-	perm = Integer.parseInt(permitted);
-      } catch (NumberFormatException e) {
-	//Will Throw exception!
-	//do something! anything to handle the exception.
-	out.println("<h3>permitted should be number!</h3>");
-	out.println("<a href=\"updateimage.jsp?p_id="+pic_id+"\">Back to update!</a>");
-	conn.rollback();
-	return;
-      }
-      rset.updateInt(3,perm);
-
+   
+    int ret = stmt.executeUpdate(cmd);
+    int grdtru=Integer.parseInt(pid[1])-Integer.parseInt(pid[0])+1;
+    if(ret!=grdtru){
+      out.println("<h3>row number changerd incorrect,rollbacked.returned: "+ret+" should be: "+grdtru+" </h3>");
+      conn.rollback();
+      return;
     }
 
 
-    if(!subj.equals("")){
-      rset.updateString(4,subj);
-    }
-
-    if(!place.equals("")){
-      rset.updateString(5,place);
-    }
-    
-    if(!timing.equals("")){
-      Date date=null;
-      
-      try{
-	date = Date.valueOf(timing);
-      }catch ( IllegalArgumentException e) {
-	out.println("<h3>Invalid Date format!Should be yyyy-mm-dd.</h3>");
-	out.println("<a href=\"updateimage.jsp?p_id="+pic_id+"\">Back to update!</a>");
-	conn.rollback();
-	return;
-      }
-
-      rset.updateDate(6,date);
-    }
-
-    if(!desc.equals("")){
-      rset.updateString(7,desc);
-    }
-    rset.updateRow();
     conn.commit();
     out.println("<h1>Update successul.</h>");
     try{
@@ -125,6 +137,7 @@ if( session.getAttribute("isLogin")!=null && (Boolean)session.getAttribute("isLo
     conn.rollback();
     out.println("<h3>The permitted may not in database.</h3>");
     out.println("<a href=\"updateimage.jsp?p_id="+pic_id+"\">Back to update!</a>");
+    out.println(cmd);
     out.println(e.getMessage());
   }
   
@@ -144,6 +157,4 @@ else
 
 </BODY>
 </HTML>
-
-
 

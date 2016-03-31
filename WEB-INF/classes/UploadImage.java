@@ -64,7 +64,7 @@ public class UploadImage extends HttpServlet {
 	String password = "c3912016";
 	String drivername = "oracle.jdbc.driver.OracleDriver";
 	String dbstring ="jdbc:oracle:thin:@gwynne.cs.ualberta.ca:1521:CRS";
-	int pic_id;
+	int pic_id=0;
 
         Connection  conn;
 
@@ -100,33 +100,36 @@ public class UploadImage extends HttpServlet {
           
         }
         catch( Exception ex ) {
-	    //System.out.println( ex.getMessage());
-	    response_message = ex.getMessage();
+          //System.out.println( ex.getMessage());
+          response_message = ex.getMessage();
            
-            out.println("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0 " +
-                        "Transitional//EN\">\n" +
-                        "<HTML>\n" +
-                        "<HEAD><TITLE>Upload Message</TITLE></HEAD>\n" +
-                        "<BODY>\n" +
-                        "<H1>" +
-                        response_message +
-                        "</H1>\n" +
-                        "</BODY></HTML>");
-            return;
+          out.println("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0 " +
+                      "Transitional//EN\">\n" +
+                      "<HTML>\n" +
+                      "<HEAD><TITLE>Upload Message</TITLE></HEAD>\n" +
+                      "<BODY>\n" +
+                      "<H1>" +
+                      response_message +
+                      "</H1>\n" +
+                      "</BODY></HTML>");
+          return;
             
 	}
         
 	try {
-	    //Parse the HTTP request to get the image stream
-	    DiskFileUpload fu = new DiskFileUpload();
-	    List FileItems = fu.parseRequest(request);
+          //Parse the HTTP request to get the image stream
+          DiskFileUpload fu = new DiskFileUpload();
+          List FileItems = fu.parseRequest(request);
 	        
-	    // Process the uploaded items, assuming only 1 image file uploaded
-	    Iterator i = FileItems.iterator();
-	    FileItem item = (FileItem) i.next();
-	    while (i.hasNext() && item.isFormField()) {
-		item = (FileItem) i.next();
-	    }
+          // Process the uploaded items, assuming only 1 image file uploaded
+          Iterator i = FileItems.iterator();
+          FileItem item;//= (FileItem) i.next();
+          int begin_id=-1;
+          while (i.hasNext()) {
+            item = (FileItem) i.next();
+	    if(item.isFormField()){
+              break;
+            }
 
 	    //Get the image stream
 	    InputStream instream = item.getInputStream();
@@ -142,7 +145,9 @@ public class UploadImage extends HttpServlet {
 	    ResultSet rset1 = stmt.executeQuery("SELECT photo_id_seq.nextval from dual");
 	    rset1.next();
 	    pic_id = rset1.getInt(1);
-
+            if (begin_id==-1){
+              begin_id=pic_id;
+            }
 	    //Insert an empty blob into the table first. Note that you have to 
 	    //use the Oracle specific function empty_blob() to create an empty blob
 	    stmt.execute("INSERT INTO IMAGES VALUES("+pic_id+",'"+userName+"',2,null,null,null,null,empty_blob(),empty_blob())");
@@ -166,7 +171,7 @@ public class UploadImage extends HttpServlet {
 	    byte[] buffer = new byte[size];
 	    int length = -1;
 	    while ((length = instream.read(buffer)) != -1)
-		outstream.write(buffer, 0, length);
+              outstream.write(buffer, 0, length);
 	    
 	    instream.close();
             instreamThu.close();
@@ -174,16 +179,21 @@ public class UploadImage extends HttpServlet {
             outstreamThu.close();
 
             stmt.executeUpdate("commit");
-	    response_message = " Upload OK!  ";
+          }
             
-            conn.commit();
-            conn.close();
-
-            session.setAttribute("PICID",pic_id);
+          response_message = " Upload OK!  ";
             
-            String redirectURL = "updateimage.jsp";
-    	    response.sendRedirect(redirectURL);
+          conn.commit();
+          conn.close();
 
+          String redirectURL;
+          if(begin_id == pic_id){            
+            redirectURL = "updateimage.jsp?p_id="+pic_id;
+              
+          }else{
+            redirectURL = "updateimage.jsp?p_id="+begin_id+"+"+pic_id;
+          }
+          response.sendRedirect(redirectURL);
 	} catch( Exception ex ) {
 	    //System.out.println( ex.getMessage());
 	    response_message = ex.getMessage();

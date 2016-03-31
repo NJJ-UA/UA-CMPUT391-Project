@@ -24,7 +24,7 @@ public class PictureBrowse extends HttpServlet implements SingleThreadModel {
      *  servlet, called GetOnePic, with the photo_id as its query string
      *
      */
-    public void doGet(HttpServletRequest request,
+    public void doPost(HttpServletRequest request,
 		      HttpServletResponse res)
 	throws ServletException, IOException {
 
@@ -51,69 +51,72 @@ public class PictureBrowse extends HttpServlet implements SingleThreadModel {
        
         String userName = session.getAttribute("USERNAME").toString();
         String que = request.getParameter("query");
+        String from = request.getParameter("FROM");
+        String to = request.getParameter("TO");
+        String rank = request.getParameter("rank");
         
-        String query;
+
         String select="SELECT photo_id FROM IMAGES WHERE ('admin'='"+userName+"' or owner_name='"+userName+"' OR permitted = 1 OR '"+userName+"' in(select friend_id from group_lists where permitted=group_id ) )";
         String order="";
 
-        if (request.getParameter("search") != null)
+        if (request.getParameter("search") != null) 
         {
-    
-    
-          if((request.getParameter("query").equals(""))&&(request.getParameter("FROM").equals(""))&&(request.getParameter("TO").equals("")))
-          {
+          if((que.equals(""))&&(rank.equals("rele"))){
+            errorPage(out,"Can not rank by relevant if no keywords!");
+            return;
+          }
+          
+          if(!(que.equals(""))){
 
-
-
-
-          }else if ((request.getParameter("query").equals(""))&&(!(request.getParameter("FROM").equals("")))&&(!(request.getParameter("TO").equals("")))){
-
-
-            select=select+" AND (contains(SUBJECT, '"+que+"', 1) > 0 OR contains(PLACE, '"+que+"', 2) > 0  OR contains(description, '"+que+"', 3) > 0) ";
-
-
-          }else if ((!(request.getParameter("query").equals("")))&&(request.getParameter("FROM").equals(""))&&(request.getParameter("TO").equals(""))){
-
-
-
+            select = select+" AND (contains(SUBJECT, '"+que+"', 1) > 0 OR contains(PLACE, '"+que+"', 2) > 0  OR contains(description, '"+que+"', 3) > 0) ";
 
           }
+
+          if(!(from.equals(""))){
+      
+            try{
+              java.sql.Date date = java.sql.Date.valueOf(from);
+            }catch ( IllegalArgumentException e) {
+              errorPage(out,"Invalid Date format!Should be yyyy-mm-dd.");
+              return;
+            }
+
+            select = select+" and timing>=to_date('"+from+"','yyyy-mm-dd') ";
+
+          }
+
+          if(!(to.equals(""))){
+      
+            try{
+              java.sql.Date date1 = java.sql.Date.valueOf(to);
+            }catch ( IllegalArgumentException e) {
+              errorPage(out,"Invalid Date format!Should be yyyy-mm-dd.");
+              return;
+            }
+
+            select = select+" and timing<=to_date('"+to+"','yyyy-mm-dd') ";
+          }
+
+          if (rank.equals("rele")){
+            order = " order by (score(1)*6+score(2)*3+score(3)) desc ";
+          }else if (rank.equals("first")){
+            order = " order by timing desc";
+          }else if (rank.equals("last")){
+            order = " order by timing ";
+          }else {
+            errorPage(out,"SELECT ERROR.");
+            return;
+          }
+          
         }
         String query = select + order;
         
-          
-            PreparedStatement doSearch = m_con.prepareStatement("SELECT score(1), itemName, description FROM item WHERE contains(description, ?, 1) > 0 order by score(1) desc");
-            doSearch.setString(1, request.getParameter("query"));
-            ResultSet rset2 = doSearch.executeQuery();
-            out.println("<table border=1>");
-            out.println("<tr>");
-            out.println("<th>Item Name</th>");
-            out.println("<th>Item Description</th>");
-            out.println("<th>Score</th>");
-            out.println("</tr>");
-            while(rset2.next())
-            {
-              out.println("<tr>");
-              out.println("<td>"); 
-              out.println(rset2.getString(2));
-              out.println("</td>");
-              out.println("<td>"); 
-              out.println(rset2.getString(3)); 
-              out.println("</td>");
-              out.println("<td>");
-              out.println(rset2.getObject(1));
-              out.println("</td>");
-              out.println("</tr>");
-            } 
-            out.println("</table>");
-          }
-          else
-          {
-            out.println("<br><b>Please enter text for quering</b>");
-          }            
+        if (request.getParameter("toppic") != null){
+
+          query="select * from(select j.photo_id,count(i.photo_id) ,rank() over (order by count(i.photo_id)  desc) as rnk from images_viewed i right outer join( SELECT photo_id FROM IMAGES WHERE ('admin'='"+userName+"' or owner_name='"+userName+"' OR permitted = 1 OR '"+userName+"' in(select friend_id from group_lists where permitted=group_id ) ))  j on (i.photo_id=j.photo_id) group by j.photo_id) where rnk<=5";
+
         }
-        m_con.close();
-   
+   	
         
 	out.println("<html>");
 	out.println("<head>");
@@ -122,12 +125,12 @@ public class PictureBrowse extends HttpServlet implements SingleThreadModel {
 	out.println("<body bgcolor=\"#000000\" text=\"#cccccc\" >");
 	out.println("<center>");
 	out.println("<h3>The List of Images </h3>");
-
+	
 	/*
 	 *   to execute the given query
 	 */
 	try {
-	    String query = "select photo_id from images";
+	    
 
 	    Connection conn = getConnected();
 	    Statement stmt = conn.createStatement();
@@ -138,7 +141,7 @@ public class PictureBrowse extends HttpServlet implements SingleThreadModel {
 		p_id = (rset.getObject(1)).toString();
 
 	       // specify the servlet for the image
-               out.println("<a href=\"GetOnePic?big"+p_id+"\">");
+               out.println("<a href=\"imageView.jsp?p_id="+p_id+"\">");
 	       // specify the servlet for the themernail
 	       out.println("<img src=\"GetOnePic?"+p_id +
 	                   "\"></a>");
@@ -169,6 +172,21 @@ public class PictureBrowse extends HttpServlet implements SingleThreadModel {
 	Class drvClass = Class.forName(driverName); 
 	DriverManager.registerDriver((Driver) drvClass.newInstance());
 	return( DriverManager.getConnection(dbstring,username,password) );
+    }
+
+
+    public static void errorPage(PrintWriter outs,String errormess) {
+      outs.println("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0 " +
+                   "Transitional//EN\">\n" +
+                   "<HTML>\n" +
+                   "<HEAD><TITLE>Upload Message</TITLE></HEAD>\n" +
+                   "<BODY>\n" +
+                   "<H1>" +
+                   errormess +
+                   "</H1>\n" +
+                   "<a href=\"main.jsp\">back to main</a>"+
+                   "</BODY></HTML>");
+        
     }
 }
 

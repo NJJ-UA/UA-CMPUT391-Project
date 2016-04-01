@@ -91,6 +91,8 @@ if( session.getAttribute("isLogin")!=null && (Boolean)session.getAttribute("isLo
     out.println("<h3>Description: "+desc+ "</h3>");
     out.println("<a href=\"updateimage.jsp?p_id="+request.getParameter("p_id")+"\">Update</a>");
     out.println("<br>");
+    out.println("<a href=\"removeimage.jsp?p_id="+request.getParameter("p_id")+"\">Remove</a>");
+    out.println("<br>");
     out.println("<img src=\"GetOnePic?big"+request.getParameter("p_id")+"\"></a>");
     try{
       conn.close();

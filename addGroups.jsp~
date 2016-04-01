@@ -83,6 +83,7 @@ if( session.getAttribute("isLogin")!=null && (Boolean)session.getAttribute("isLo
 		    out.println("<a href=\"main.jsp\" >Go to main page</a>");
 		    out.println("<a href=\"updateGroup.jsp\" >Go to view my groups</a>");
 		    //out.println("<a href=\"updateGroup.jsp\" >Go to delete a friend in group</a>");
+		    conn.close();
 
 	    }  
 		catch(Exception ex){

@@ -98,3 +98,5 @@ else{
 	 out.println("<a href=\"login.html\">You need login first!</a>");
 }
 %>
+<br>
+<a target="_blank" href="userDocumentation.html">Help</a>

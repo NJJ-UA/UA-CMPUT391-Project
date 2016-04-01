@@ -55,7 +55,8 @@ if( session.getAttribute("isLogin")!=null && (Boolean)session.getAttribute("isLo
 
 	try{
 	    stmt = conn.createStatement();
-	    rset = stmt.executeQuery(sql);	
+	    rset = stmt.executeQuery(sql);
+	
 	    %>	
 
 <form>
@@ -71,7 +72,9 @@ if( session.getAttribute("isLogin")!=null && (Boolean)session.getAttribute("isLo
 </form>
 
 
-<%    }
+<%    
+		conn.close();
+	}
 	catch(Exception ex){
 	    out.println("<br>" + ex.getMessage() + "<br>");
 	    return;
@@ -93,3 +96,5 @@ else{
 	 out.println("<a href=\"login.html\">You need login first!</a>");
 }
 %>
+<br>
+<a target="_blank" href="userDocumentation.html">Help</a>

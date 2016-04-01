@@ -293,6 +293,7 @@
 
 
       %>
-
+<br>
+<a target="_blank" href="userDocumentation.html">Help</a>
   </body>
 </html>

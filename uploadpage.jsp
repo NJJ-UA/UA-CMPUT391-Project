@@ -37,7 +37,7 @@ else
 }      
 %>
 
-
-
+<br>
+<a target="_blank" href="userDocumentation.html">Help</a>
 </BODY>
 </HTML>

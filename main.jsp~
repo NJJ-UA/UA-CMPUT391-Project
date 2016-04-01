@@ -63,6 +63,7 @@ if( session.getAttribute("isLogin")!=null && (Boolean)session.getAttribute("isLo
     try{
       stmt = conn.createStatement();
       rset = stmt.executeQuery(sql);
+      conn.close();
     }catch(Exception ex){
       out.println("<hr>" + ex.getMessage() + "<hr>");
       return;
@@ -115,6 +116,9 @@ if( session.getAttribute("isLogin")!=null && (Boolean)session.getAttribute("isLo
 <a href="updateGroup.jsp">Manage your groups!</a>
 <br>
 <a href="uploadpage.jsp">Upload Pictures!</a>
+<br>
+<br>
+<a href="adminManage.jsp">Data analyse!</a>
 <br>
  <br>
 
@@ -174,7 +178,8 @@ else
 }      
 %>
 
-
+<br>
+<a target="_blank" href="userDocumentation.html">Help</a>
 
 </BODY>
 </HTML>

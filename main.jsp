@@ -75,6 +75,12 @@ if( session.getAttribute("isLogin")!=null && (Boolean)session.getAttribute("isLo
     String email=rset.getString(5);
     String phone=rset.getString(6);
 
+    try{
+      conn.close();
+    }catch(Exception ex){
+      out.println("<hr>" + ex.getMessage() + "<hr>");
+      return;
+    }
 %>
 
 <table>
@@ -177,7 +183,8 @@ else
 }      
 %>
 
-
+<br>
+<a target="_blank" href="userDocumentation.html">Help</a>
 
 </BODY>
 </HTML>

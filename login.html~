@@ -24,6 +24,8 @@
 <input value="LOGIN" name="Submit" type="submit">
 <a href="signup.html" target="_blank">Sign up</a>
 </form>
+<a target="_blank" href="userDocumentation.html">Help</a>
+</html>
 
 
    

@@ -13,7 +13,7 @@ if( session.getAttribute("isLogin")!=null && (Boolean)session.getAttribute("isLo
   String p_id=request.getParameter("p_id");
   if (p_id.contains(" ")){
     String[] p=p_id.split(" ");
-    out.println("<form  name=\"update\" method=\"POST\"  action=\"updateimageMult.jsp?p_id="+p[0]+\"+\"+p[1]+"\">");
+    out.println("<form  name=\"update\" method=\"POST\"  action=\"updateimageMult.jsp?p_id="+p[0]+"+"+p[1]+"\">");
     
   }else{
     out.println("<form  name=\"update\" method=\"POST\"  action=\"updateimageBack.jsp?p_id="+p_id+"\">");

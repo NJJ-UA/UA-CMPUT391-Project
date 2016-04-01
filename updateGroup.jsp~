@@ -51,11 +51,12 @@ if( session.getAttribute("isLogin")!=null && (Boolean)session.getAttribute("isLo
 
 
 	////////////////////get the group lists
-	String sql = "SELECT group_name FROM groups where user_name ='"+userName+"'";
+	String sql = "SELECT group_name,group_id FROM groups where user_name ='"+userName+"'";
 
 	try{
 	    stmt = conn.createStatement();
-	    rset = stmt.executeQuery(sql);	
+	    rset = stmt.executeQuery(sql);
+	    conn.close();	
 	    %>	
 
 <form>
@@ -64,7 +65,7 @@ if( session.getAttribute("isLogin")!=null && (Boolean)session.getAttribute("isLo
 	<%
 	while(rset.next()){
 	%>
-	<option value = "<%=rset.getString(1)%>"><%=rset.getString(1)%></option>
+	<option value = "<%=rset.getInt(2) %>"><%=rset.getString(1)%></option>
 	<%}%>
 </select></td>
 <input type = "submit" value = "edit" name = "group">
@@ -93,3 +94,5 @@ else{
 	 out.println("<a href=\"login.html\">You need login first!</a>");
 }
 %>
+<br>
+<a target="_blank" href="userDocumentation.html">Help</a>
